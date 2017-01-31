@@ -2,8 +2,6 @@
 import webapp2
 import cgi
 import re
-USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
-USER_pass = re.compile(r"^.{3,20}$")
 
 
 # html boilerplate for the top of every page
@@ -43,15 +41,15 @@ submit_form = """
         <label>
             Username
             <input type="text" name="username"/>
-        </label> <span style="color: red">%(error)s</span> <br>
+        </label> <span style="color: red">%(usererror)s</span> <br>
         <label>
             Password
-            <input type="text" name="password"/>
-        </label> <span name="span 2" value="username_error"> </span> <br>
+            <input type="password" name="password"/>
+        </label> <span style="color: red">%(passworderror)s</span> <br>
         <label>
             Verify password
             <input type="text" name="verify"/>
-        </label> <span> + verify_error + </span> <br>
+        </label> <span style="color: red">%(verifyerror)s</span> <br>
         <label>
             Email(optional)
             <input type="text" name="email"/>
@@ -62,15 +60,19 @@ submit_form = """
 
 
 class Index(webapp2.RequestHandler):
-    def writeForm(self, error=""):
-        self.response.out.write(submit_form % {"error": error})
+    def writeForm(self, ue="", pe="", ve=""):
+        edict = {"usererror":ue, "passworderror":pe, "verifyerror":ve}
+        self.response.write(page_header + (submit_form % edict) + page_footer)
 
     def get(self):
-        self.response.write(page_header + submit_form + page_footer)
+        self.writeForm()
+        #self.response.write(page_header + submit_form + page_footer)
+
+
 
     def post(self):
         username = self.request.get("username")
-        username_escaped = cgi.escape(username)
+        #username_escaped = cgi.escape(username)
         password = self.request.get("password")
         password_escaped = cgi.escape(password)
         verify = self.request.get("verify")
@@ -78,17 +80,30 @@ class Index(webapp2.RequestHandler):
         email = self.request.get("email")
         email_escaped = cgi.escape(email)
 
+        USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+        def valid_username(usernameInput):
+            if USER_RE.match(usernameInput):
+                return True
+            else:
+                return False
 
+        USER_pass = re.compile(r"^.{3,20}$")
+        def valid_password(passwordInput):
+            if USER_RE.match(passwordInput):
+                return True
+            else:
+                return False
 
-        def valid_username(username):
-            return USER_RE.match(username)
+        self.response.write(valid_password(password))
 
-        def valid_password(password):
-            return USER_pass.match(password)
+        #ue = ""
+        #pe=""
+        #if username == "":
+            #self.response.write(page_header + page_footer)
+            #ue ="no username"
+        #if
+        #self.writeForm(ue ,pe)
 
-        if username == "":
-            nameerror = "bad"
-            self.writeForm("bad")
 
 
         #if valid_username(username_escaped) == False:
